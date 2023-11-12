@@ -58,10 +58,12 @@
         android:layout_height="wrap_content"
         android:text=""
         android:textSize="30sp"
+        android:textColor="@color/black"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/card3"
         app:layout_constraintBottom_toTopOf="@id/btn_shuffle"
         />
+
 
     <Button
         android:id="@+id/btn_shuffle"
@@ -70,7 +72,7 @@
         android:layout_margin="8dp"
         android:text="Good Luck"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/card1"
+        app:layout_constraintTop_toBottomOf="@id/rank"
         app:layout_constraintBottom_toBottomOf="parent"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

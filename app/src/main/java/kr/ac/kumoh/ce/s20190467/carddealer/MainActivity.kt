@@ -17,25 +17,45 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        //setContentView(R.layout.activity_main)
         main= ActivityMainBinding.inflate(layoutInflater)
         setContentView(main.root)
 
         model = ViewModelProvider(this)[CardDealerViewModel::class.java]
 
-
-        model.cards.observe(this, Observer{cards ->
-            val rankResult = rank(cards)
+        // rankResult 관찰
+        model.rankResult.observe(this, Observer { rankResult ->
             updateRankText(rankResult)
+        })
 
-            for (i in cards.indices){
-                res[i] = resources.getIdentifier(
-                    getCardName(cards[i]),
-                    "drawable",
-                    packageName
-                )
-                //Log.d("CardValues", "cards[$i] = ${cards[i]}")
-        }
+        model.cards.observe(this, Observer { cards ->
+            for (i in cards.indices) {
+                val resourceName = model.getCardName(cards[i])
+                res[i] = resources.getIdentifier(resourceName, "drawable", packageName)
+            }
+
+
+//            model.cards.observe(this, Observer{cards ->
+//            if (cards.none { it == -1 }) { //첫 실행화면 메시지x
+//                val rankResult = rank(cards)
+//                updateRankText(rankResult)
+//            } else {
+//                updateRankText("")
+//            }
+//
+//            for (i in cards.indices) {
+//                val resourceName = model.getCardName(cards[i])
+//                res[i] = resources.getIdentifier(resourceName, "drawable", packageName)
+//            }
+
+
+//            for (i in cards.indices){
+//                res[i] = resources.getIdentifier(
+//                    getCardName(cards[i]),
+//                    "drawable",
+//                    packageName
+//                )
+//                //Log.d("CardValues", "cards[$i] = ${cards[i]}")
+//        }
             main.card1.setImageResource(res[0])
             main.card2.setImageResource(res[1])
             main.card3.setImageResource(res[2])
@@ -47,15 +67,10 @@ class MainActivity : AppCompatActivity() {
 
         main.btnShuffle.setOnClickListener{
             model.shuffle()
-
-//            val cardsArray = model.cards.value ?: IntArray(5)
-//            val rankResult = model.rank(cardsArray)
-//            main.rank?.text = rankResult
         }
-
-
     }
-    private fun getCardName(c: Int) : String {
+/*
+    fun getCardName(c: Int) : String {
         //val에서 var로 변경
 
         var shape = when (c / 13) {
@@ -86,24 +101,12 @@ class MainActivity : AppCompatActivity() {
 
         }
 
-        // 이 방법이 더 나을 듯
-//        if (c % 13 in 10..12)
-//            return "c_${number}_of_${shape}2"
-//        else
-//            return "c_${number}_of_${shape}"
-
         return "c_${number}_of_${shape}"
 
 
     }
 
-    fun rank(cards: IntArray): String {
-        // 여기에 족보 판별 로직을 구현합니다.
-        // cards 배열을 기반으로 족보를 결정하고 족보를 나타내는 문자열을 반환합니다.
-        // 예를 들어, "로열 플러시" 또는 "원 페어"와 같은 문자열을 반환할 수 있습니다.
-        // 필요에 따라 다양한 족보를 판별하는 로직을 구현하세요.
-
-        // 족보를 나타내는 문자열을 반환합니다.
+    fun rank(cards: IntArray): String { // 족보를 나타내는 문자열을 반환
 
         if (hasRoyalStraightFlush(cards)) {
             return "Royal Straight Flush"
@@ -120,9 +123,9 @@ class MainActivity : AppCompatActivity() {
         if (hasFullHouse(cards)) {
             return "Full House"
         }
-//        if (hasFlush(cards)) {
-//            return "Flush"
-//        }
+        if (hasFlush(cards)) {
+            return "Flush"
+        }
         if (hasMountain(cards)) {
             return "Mountain"
         }
@@ -155,7 +158,7 @@ class MainActivity : AppCompatActivity() {
             return false
         }
 
-        // 필요한 카드의 숫자를 세트로 만듭니다.
+        // 필요한 카드의 숫자를 세트로 만듦
         val requiredNumbers = setOf(0, 9, 10, 11, 12)
 
         // 카드 숫자가 필요한 숫자에 포함되어 있는지 확인
@@ -163,23 +166,23 @@ class MainActivity : AppCompatActivity() {
         return cardNumbers == requiredNumbers
     }
 
-    private fun hasBackStraightFlush(cards: IntArray): Boolean {
-        // 먼저 모든 카드가 같은 무늬를 가지고 있는지 확인합니다.
+    private fun hasBackStraightFlush(cards: IntArray): Boolean { //무늬가 같은 A, 2, 3, 4, 5
+        // 모든 카드가 같은 무늬를 가지고 있는지 확인
         val suit = cards[0] / 13
         if (cards.any { it / 13 != suit }) {
             return false
         }
 
-        // 백 스트레이트 플러시를 구성하는 카드 숫자들을 설정합니다.
+        // 백 스트레이트 플러시를 구성하는 카드 숫자들을 설정
         val backStraightNumbers = setOf(0, 1, 2, 3, 4) // A, 2, 3, 4, 5
 
-        // 각 카드의 숫자가 위에서 정의한 숫자들 중 하나인지 확인합니다.
+        // 각 카드의 숫자가 위에서 정의한 숫자들 중 하나인지 확인
         val cardNumbers = cards.map { it % 13 }.toSet()
         return cardNumbers == backStraightNumbers
     }
 
 
-    private fun hasStraightFlush(cards: IntArray): Boolean {
+    private fun hasStraightFlush(cards: IntArray): Boolean { //숫자가 이어지고 무늬가 같은 카드 5장
         // 모든 카드가 같은 무늬인지 확인
         val firstSuit = cards[0] / 13
         if (cards.any { it / 13 != firstSuit }) {
@@ -207,29 +210,29 @@ class MainActivity : AppCompatActivity() {
     }
 
 
-    private fun hasFourCard(cards: IntArray): Boolean {
+    private fun hasFourCard(cards: IntArray): Boolean { //숫자가 같은 카드 4장
         val countsMap = mutableMapOf<Int, Int>()
 
         for (card in cards) {
-            val cardNumber = card % 13  // 카드 숫자만을 추출합니다.
+            val cardNumber = card % 13  // 카드 숫자만을 추출
             countsMap[cardNumber] = countsMap.getOrDefault(cardNumber, 0) + 1
         }
 
-        // countsMap에서 값이 4인 것이 하나 이상 있는지 확인합니다.
+        // countsMap에서 값이 4인 것이 하나 이상 있는지 확인
         return countsMap.any { it.value == 4 }
     }
 
 
-    private fun hasFullHouse(cards: IntArray): Boolean {
+    private fun hasFullHouse(cards: IntArray): Boolean { //숫자가 같은 카드 3장 + 숫자가 같은 카드 2장
         val countsMap = mutableMapOf<Int, Int>()
 
-        // 카드 숫자별로 개수를 세는 맵을 만듭니다.
+        // 카드 숫자별로 개수를 세는 맵을 만듦
         for (card in cards) {
             val cardNumber = card % 13
             countsMap[cardNumber] = countsMap.getOrDefault(cardNumber, 0) + 1
         }
 
-        // 트리플(숫자가 같은 카드 3장)과 원 페어(숫자가 같은 카드 2장)가 있는지 확인합니다.
+        // 트리플과 원 페어가 있는지 확인
         var hasTriple = false
         var hasPair = false
         for ((_, count) in countsMap) {
@@ -240,22 +243,30 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        // 트리플과 원 페어가 모두 있어야 풀 하우스입니다.
+        // 트리플과 원 페어가 모두 있어야 풀 하우스
         return hasTriple && hasPair
     }
 
+    private fun hasFlush(cards: IntArray): Boolean { //무늬가 같은 카드 5장
+        if (cards.size < 5) {
+            return false // 카드가 없는 경우
+        }
 
-//    private fun hasFlush(cards: IntArray): Boolean { //무늬가 같은 카드 5장
-//
-//    }
+        // 첫 번째 카드의 무늬가 기준
+        val suit = cards[0] / 13
+
+        // 모든 카드가 동일한 무늬를 가지고 있는지 확인
+        return cards.all { it / 13 == suit }
+    }
+
 
     private fun hasMountain(cards: IntArray): Boolean { //A, K, Q, J, 10
         val cardNumbers = cards.map { it % 13 }.sorted()
 
-        // 마운틴을 구성하는 카드 숫자들을 정의합니다.
+        // 마운틴을 구성하는 카드 숫자들을 정의
         val mountainNumbers = listOf(0, 9, 10, 11, 12) // A, 10, J, Q, K
 
-        // 마운틴 숫자가 모두 존재하는지 확인합니다.
+        // 마운틴 숫자가 모두 존재하는지 확인
         return mountainNumbers.all { cardNumbers.contains(it) }
     }
 
@@ -263,10 +274,10 @@ class MainActivity : AppCompatActivity() {
     private fun hasBackStraight(cards: IntArray): Boolean { // A, 2, 3, 4, 5
         val cardNumbers = cards.map { it % 13 }.sorted()
 
-        // 백 스트레이트를 구성하는 카드 숫자들을 정의합니다.
+        // 백 스트레이트를 구성하는 카드 숫자들을 정의
         val backStraightNumbers = listOf(0, 1, 2, 3, 4)
 
-        // 백 스트레이트 숫자가 모두 존재하는지 확인합니다.
+        // 백 스트레이트 숫자가 모두 존재하는지 확인
         return backStraightNumbers.all { cardNumbers.contains(it) }
     }
 
@@ -274,13 +285,13 @@ class MainActivity : AppCompatActivity() {
     private fun hasStraight(cards: IntArray): Boolean { // 숫자가 이어지는 카드 5장
         val sortedCardNumbers = cards.map { it % 13 }.sorted()
 
-        // 에이스를 고려하여 추가 검사를 수행합니다. 에이스는 0 또는 14로 취급될 수 있습니다.
+        // 에이스를 고려하여 추가 검사를 수행. 에이스는 0 또는 14로 취급 가능.
         val aceAsFourteen = sortedCardNumbers.map { if (it == 0) 14 else it }
 
         return hasConsecutiveFive(sortedCardNumbers) || hasConsecutiveFive(aceAsFourteen)
     }
 
-    private fun hasConsecutiveFive(numbers: List<Int>): Boolean {
+    private fun hasConsecutiveFive(numbers: List<Int>): Boolean { //연속되는 숫자인지 판별
         var consecutiveCount = 1
 
         for (i in 0 until numbers.size - 1) {
@@ -300,13 +311,13 @@ class MainActivity : AppCompatActivity() {
     private fun hasTriple(cards: IntArray): Boolean { // 숫자가 같은 카드 3장
         val countsMap = mutableMapOf<Int, Int>()
 
-        // 카드 숫자별로 개수를 세는 맵을 만듭니다.
+        // 카드 숫자별로 개수를 세는 맵을 만듦
         for (card in cards) {
             val cardNumber = card % 13
             countsMap[cardNumber] = countsMap.getOrDefault(cardNumber, 0) + 1
         }
 
-        // 카드 숫자 중 3개가 있는 것이 있는지 확인합니다.
+        // 카드 숫자 중 3개가 있는 것이 있는지 확인
         return countsMap.any { it.value == 3 }
     }
 
@@ -334,11 +345,11 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun hasTop(cards: IntArray): Int { // 숫자가 높은 카드 1장
-        // 각 카드의 숫자 부분만 추출하고 정렬합니다.
+        // 각 카드의 숫자 부분만 추출하고 정렬
         val cardNumbers = cards.map { it % 13 }.sortedDescending()
 
-        // 가장 높은 숫자의 카드를 반환합니다.
+        // 가장 높은 숫자의 카드를 반환
         return cardNumbers.first()
     }
-
+*/
 }
