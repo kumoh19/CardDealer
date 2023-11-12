@@ -22,40 +22,25 @@ class MainActivity : AppCompatActivity() {
 
         model = ViewModelProvider(this)[CardDealerViewModel::class.java]
 
-        // rankResult 관찰
-        model.rankResult.observe(this, Observer { rankResult ->
-            updateRankText(rankResult)
-        })
 
-        model.cards.observe(this, Observer { cards ->
-            for (i in cards.indices) {
-                val resourceName = model.getCardName(cards[i])
-                res[i] = resources.getIdentifier(resourceName, "drawable", packageName)
+            model.cards.observe(this, Observer{cards ->
+            if (cards.none { it == -1 }) { //첫 실행화면 메시지x
+                val rankResult = rank(cards)
+                updateRankText(rankResult)
+            } else {
+                updateRankText("")
             }
 
 
-//            model.cards.observe(this, Observer{cards ->
-//            if (cards.none { it == -1 }) { //첫 실행화면 메시지x
-//                val rankResult = rank(cards)
-//                updateRankText(rankResult)
-//            } else {
-//                updateRankText("")
-//            }
-//
-//            for (i in cards.indices) {
-//                val resourceName = model.getCardName(cards[i])
-//                res[i] = resources.getIdentifier(resourceName, "drawable", packageName)
-//            }
 
-
-//            for (i in cards.indices){
-//                res[i] = resources.getIdentifier(
-//                    getCardName(cards[i]),
-//                    "drawable",
-//                    packageName
-//                )
-//                //Log.d("CardValues", "cards[$i] = ${cards[i]}")
-//        }
+            for (i in cards.indices){
+                res[i] = resources.getIdentifier(
+                    getCardName(cards[i]),
+                    "drawable",
+                    packageName
+                )
+                //Log.d("CardValues", "cards[$i] = ${cards[i]}")
+        }
             main.card1.setImageResource(res[0])
             main.card2.setImageResource(res[1])
             main.card3.setImageResource(res[2])
@@ -69,7 +54,7 @@ class MainActivity : AppCompatActivity() {
             model.shuffle()
         }
     }
-/*
+
     fun getCardName(c: Int) : String {
         //val에서 var로 변경
 
@@ -351,5 +336,5 @@ class MainActivity : AppCompatActivity() {
         // 가장 높은 숫자의 카드를 반환
         return cardNumbers.first()
     }
-*/
+
 }
